@@ -24,16 +24,77 @@
     /* Image zoom cursor */
     .zoomable-image { cursor: zoom-in; transition: opacity 0.2s; }
     .zoomable-image:hover { opacity: 0.9; }
+    .zoomable-image:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; border-radius: 0.5rem; }
 
-    /* Modal styles */
-    .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
-             background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+    /* Award cards */
+    .award-card {
+      display: flex; align-items: stretch; gap: 1rem; min-height: 7rem;
+      padding: 0.875rem; border-width: 1px; border-radius: 1rem;
+    }
+    .award-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; justify-content: center; }
+    .certificate-trigger,
+    .certificate-placeholder {
+      position: relative; display: flex; width: 7.5rem; flex: 0 0 7.5rem;
+      aspect-ratio: 4 / 3; align-items: center; justify-content: center;
+      overflow: hidden; border-radius: 0.75rem; background: #fff;
+    }
+    .certificate-trigger {
+      min-height: 44px; cursor: zoom-in; border: 1px solid #cbd5e1;
+      padding: 0; font: inherit;
+      box-shadow: 0 1px 3px rgb(15 23 42 / 0.08);
+      transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    }
+    .certificate-trigger:hover { border-color: #60a5fa; box-shadow: 0 4px 12px rgb(15 23 42 / 0.14); }
+    .certificate-trigger:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+    .certificate-trigger img { width: 100%; height: 100%; object-fit: contain; }
+    .certificate-zoom-hint {
+      position: absolute; right: 0.35rem; bottom: 0.35rem; display: inline-flex;
+      width: 1.75rem; height: 1.75rem; align-items: center; justify-content: center;
+      border-radius: 9999px; color: #fff; background: rgb(15 23 42 / 0.78);
+      box-shadow: 0 1px 4px rgb(15 23 42 / 0.2);
+    }
+    .certificate-placeholder {
+      flex-direction: column; gap: 0.35rem; border: 1px dashed #94a3b8;
+      color: #475569; background: rgb(248 250 252 / 0.88);
+    }
+    .certificate-placeholder span { font-size: 0.68rem; font-weight: 600; }
+
+    /* Accessible image dialog */
+    body.modal-open { overflow: hidden; }
+    .modal {
+      display: none; position: fixed; z-index: 9999; inset: 0; padding: 1.25rem;
+      background-color: rgb(2 6 23 / 0.94); align-items: center; justify-content: center;
+      flex-direction: column; gap: 0.75rem;
+    }
     .modal.active { display: flex; }
-    .modal-content { max-width: 90%; max-height: 90%; object-fit: contain; animation: zoomIn 0.3s; }
-    .modal-close { position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px;
-                   font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .modal-close:hover { color: #bbb; }
-    @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-content {
+      max-width: min(92vw, 1600px); max-height: calc(100vh - 7.5rem); object-fit: contain;
+      border-radius: 0.5rem; box-shadow: 0 20px 50px rgb(0 0 0 / 0.45); animation: zoomIn 0.25s;
+    }
+    .modal-caption { max-width: min(90vw, 70rem); color: #e2e8f0; font-size: 0.875rem; text-align: center; }
+    .modal-close {
+      position: absolute; top: max(1rem, env(safe-area-inset-top)); right: max(1rem, env(safe-area-inset-right));
+      display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center;
+      border: 1px solid rgb(255 255 255 / 0.28); border-radius: 9999px; color: #f8fafc;
+      background: rgb(15 23 42 / 0.78); cursor: pointer; transition: background-color 0.2s, border-color 0.2s;
+    }
+    .modal-close:hover { border-color: rgb(255 255 255 / 0.5); background: rgb(51 65 85 / 0.92); }
+    .modal-close:focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
+    @keyframes zoomIn { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    @media (max-width: 480px) {
+      .award-card { gap: 0.75rem; padding: 0.75rem; }
+      .certificate-trigger,
+      .certificate-placeholder { width: 6.5rem; flex-basis: 6.5rem; }
+      .modal { padding: 1rem; }
+      .modal-content { max-width: 94vw; max-height: calc(100vh - 8rem); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html:focus-within { scroll-behavior: auto; }
+      .card-hover, .zoomable-image, .certificate-trigger, .modal-close { transition: none; }
+      .modal-content { animation: none; }
+    }
   </style>
 </head>
 <body class="bg-white text-slate-800 antialiased">
@@ -375,112 +436,296 @@
 
         <!-- National / International -->
         <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 pl-1">国家级 · 国际级</p>
-          <div class="space-y-3">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 pl-1">国家级 · 国际级</p>
+          <div class="space-y-4">
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-100">
-              <span class="text-xl flex-shrink-0">🥈</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第二十四届中国机器人及人工智能大赛总决赛</p>
-                <p class="text-xs text-amber-700 font-semibold mt-0.5">国家级二等奖</p>
+            <article class="award-card bg-amber-50 border-amber-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第二十四届中国机器人及人工智能大赛总决赛国家级二等奖.webp"
+                      data-title="第二十四届中国机器人及人工智能大赛总决赛"
+                      data-award-level="国家级二等奖"
+                      aria-label="查看第二十四届中国机器人及人工智能大赛总决赛国家级二等奖证书">
+                <img src="assets/images/awards/第二十四届中国机器人及人工智能大赛总决赛国家级二等奖.thumb.webp"
+                     alt="第二十四届中国机器人及人工智能大赛总决赛国家级二等奖证书"
+                     width="837" height="590" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第二十四届中国机器人及人工智能大赛总决赛</h3>
+                <p class="text-xs text-amber-700 font-semibold mt-1">国家级二等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-100">
-              <span class="text-xl flex-shrink-0">🌐</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">2023 美国大学生数学建模大赛（MCM/ICM）</p>
-                <p class="text-xs text-blue-700 font-semibold mt-0.5">国际 H 奖</p>
+            <article class="award-card bg-blue-50 border-blue-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/2023美国大学生数学建模大赛国际H奖.webp"
+                      data-title="2023 美国大学生数学建模大赛（MCM/ICM）"
+                      data-award-level="国际 H 奖"
+                      aria-label="查看2023美国大学生数学建模大赛国际H奖证书">
+                <img src="assets/images/awards/2023美国大学生数学建模大赛国际H奖.thumb.webp"
+                     alt="2023美国大学生数学建模大赛国际H奖证书"
+                     width="1800" height="1391" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">2023 美国大学生数学建模大赛（MCM/ICM）</h3>
+                <p class="text-xs text-blue-700 font-semibold mt-1">国际 H 奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-100">
-              <span class="text-xl flex-shrink-0">🥈</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第十三届全国大学生数学竞赛（非数学类）</p>
-                <p class="text-xs text-amber-700 font-semibold mt-0.5">国家二等奖</p>
+            <article class="award-card bg-amber-50 border-amber-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第十三届全国大学生数学竞赛（非数学类）国家二等奖.webp"
+                      data-title="第十三届全国大学生数学竞赛（非数学类）"
+                      data-award-level="国家二等奖"
+                      aria-label="查看第十三届全国大学生数学竞赛非数学类国家二等奖证书">
+                <img src="assets/images/awards/第十三届全国大学生数学竞赛（非数学类）国家二等奖.thumb.webp"
+                     alt="第十三届全国大学生数学竞赛非数学类国家二等奖证书"
+                     width="698" height="487" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第十三届全国大学生数学竞赛（非数学类）</h3>
+                <p class="text-xs text-amber-700 font-semibold mt-1">国家二等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-100">
-              <span class="text-xl flex-shrink-0">🥈</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第十九届"博创杯"全国大学生嵌入式人工智能设计大赛</p>
-                <p class="text-xs text-amber-700 font-semibold mt-0.5">全国二等奖</p>
+            <article class="award-card bg-amber-50 border-amber-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第十九届“博创杯”全国大学生嵌入式人工智能设计大赛全国二等奖.webp"
+                      data-title="第十九届“博创杯”全国大学生嵌入式人工智能设计大赛"
+                      data-award-level="全国二等奖"
+                      aria-label="查看第十九届博创杯全国大学生嵌入式人工智能设计大赛全国二等奖证书">
+                <img src="assets/images/awards/第十九届“博创杯”全国大学生嵌入式人工智能设计大赛全国二等奖.thumb.webp"
+                     alt="第十九届博创杯全国大学生嵌入式人工智能设计大赛全国二等奖证书"
+                     width="1800" height="1324" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第十九届“博创杯”全国大学生嵌入式人工智能设计大赛</h3>
+                <p class="text-xs text-amber-700 font-semibold mt-1">全国二等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-yellow-50 border border-yellow-100">
-              <span class="text-xl flex-shrink-0">🏆</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第十六届"认证杯"数学中国数学建模网络挑战赛</p>
-                <p class="text-xs text-yellow-700 font-semibold mt-0.5">全国比赛第一阶段一等奖</p>
+            <article class="award-card bg-yellow-50 border-yellow-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第十六届“认证杯”数学中国数学建模网络挑战赛全国比赛第一阶段一等奖.webp"
+                      data-title="第十六届“认证杯”数学中国数学建模网络挑战赛"
+                      data-award-level="全国比赛第一阶段一等奖"
+                      aria-label="查看第十六届认证杯数学中国数学建模网络挑战赛全国比赛第一阶段一等奖证书">
+                <img src="assets/images/awards/第十六届“认证杯”数学中国数学建模网络挑战赛全国比赛第一阶段一等奖.thumb.webp"
+                     alt="第十六届认证杯数学中国数学建模网络挑战赛全国比赛第一阶段一等奖证书"
+                     width="1123" height="794" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第十六届“认证杯”数学中国数学建模网络挑战赛</h3>
+                <p class="text-xs text-yellow-700 font-semibold mt-1">全国比赛第一阶段一等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-100">
-              <span class="text-xl flex-shrink-0">🎓</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">2022 国家励志奖学金 · 2023 国家奖学金</p>
-                <p class="text-xs text-red-700 font-semibold mt-0.5">国家级奖学金</p>
+            <article class="award-card bg-rose-50 border-rose-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/国家奖学金.webp"
+                      data-title="2022—2023 学年度国家奖学金"
+                      data-award-level="国家级奖学金"
+                      aria-label="查看2022至2023学年度国家奖学金证书">
+                <img src="assets/images/awards/国家奖学金.thumb.webp"
+                     alt="2022至2023学年度国家奖学金证书"
+                     width="1800" height="1272" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">2022—2023 学年度国家奖学金</h3>
+                <p class="text-xs text-rose-700 font-semibold mt-1">国家级奖学金</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
+
+            <article class="award-card bg-rose-50 border-rose-100">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/国家励志奖学金.webp"
+                      data-title="2021—2022 学年度国家励志奖学金"
+                      data-award-level="国家级奖学金"
+                      aria-label="查看2021至2022学年度国家励志奖学金证书">
+                <img src="assets/images/awards/国家励志奖学金.thumb.webp"
+                     alt="2021至2022学年度国家励志奖学金证书"
+                     width="1800" height="1273" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">2021—2022 学年度国家励志奖学金</h3>
+                <p class="text-xs text-rose-700 font-semibold mt-1">国家级奖学金</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
+              </div>
+            </article>
 
           </div>
         </div>
 
         <!-- Provincial -->
         <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 pl-1">省级</p>
-          <div class="space-y-3">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 pl-1">省级</p>
+          <div class="space-y-4">
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-xl flex-shrink-0">🥇</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">2023 全国大学生数学建模大赛</p>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">湖南省一等奖</p>
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/机器人省一.webp"
+                      data-title="第二十四届中国机器人及人工智能大赛（湖南赛区）"
+                      data-award-level="人工智能创新赛一等奖"
+                      aria-label="查看第二十四届中国机器人及人工智能大赛湖南赛区人工智能创新赛一等奖证书">
+                <img src="assets/images/awards/机器人省一.thumb.webp"
+                     alt="第二十四届中国机器人及人工智能大赛湖南赛区人工智能创新赛一等奖证书"
+                     width="590" height="824" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第二十四届中国机器人及人工智能大赛（湖南赛区）</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">人工智能创新赛一等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-xl flex-shrink-0">🥇</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第四届大学生智能导航科技创新大赛</p>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">湖南省一等奖</p>
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/2023全国大学生数学建模大赛湖南省一等奖.webp"
+                      data-title="2023 全国大学生数学建模大赛"
+                      data-award-level="湖南省一等奖"
+                      aria-label="查看2023全国大学生数学建模大赛湖南省一等奖证书">
+                <img src="assets/images/awards/2023全国大学生数学建模大赛湖南省一等奖.thumb.webp"
+                     alt="2023全国大学生数学建模大赛湖南省一等奖证书"
+                     width="1434" height="1014" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">2023 全国大学生数学建模大赛</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">湖南省一等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-xl flex-shrink-0">🥇</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第十届"大唐杯"全国大学生新一代通信技术大赛</p>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">湖南省一等奖</p>
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第四届大学生智能导航科技创新大赛湖南省一等奖.webp"
+                      data-title="第四届大学生智能导航科技创新大赛"
+                      data-award-level="湖南省一等奖"
+                      aria-label="查看第四届大学生智能导航科技创新大赛湖南省一等奖证书">
+                <img src="assets/images/awards/第四届大学生智能导航科技创新大赛湖南省一等奖.thumb.webp"
+                     alt="第四届大学生智能导航科技创新大赛湖南省一等奖证书"
+                     width="1800" height="1355" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第四届大学生智能导航科技创新大赛</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">湖南省一等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-xl flex-shrink-0">🥈</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">全国大学生电子设计大赛</p>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">湖南省二等奖</p>
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第十届“大唐杯”全国大学生新一代通信技术大赛湖南省一等奖.webp"
+                      data-title="第十届“大唐杯”全国大学生新一代通信技术大赛"
+                      data-award-level="湖南省一等奖"
+                      aria-label="查看第十届大唐杯全国大学生新一代通信技术大赛湖南省一等奖证书">
+                <img src="assets/images/awards/第十届“大唐杯”全国大学生新一代通信技术大赛湖南省一等奖.thumb.webp"
+                     alt="第十届大唐杯全国大学生新一代通信技术大赛湖南省一等奖证书"
+                     width="1800" height="1273" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第十届“大唐杯”全国大学生新一代通信技术大赛</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">湖南省一等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-xl flex-shrink-0">🥉</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">第十八届全国大学生智能汽车竞赛</p>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">华南赛区三等奖</p>
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/全国大学生电子设计大赛湖南省二等奖.webp"
+                      data-title="全国大学生电子设计大赛"
+                      data-award-level="湖南省二等奖"
+                      aria-label="查看全国大学生电子设计大赛湖南省二等奖证书">
+                <img src="assets/images/awards/全国大学生电子设计大赛湖南省二等奖.thumb.webp"
+                     alt="全国大学生电子设计大赛湖南省二等奖证书"
+                     width="1800" height="1273" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">全国大学生电子设计大赛</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">湖南省二等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
 
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-              <span class="text-xl flex-shrink-0">🥉</span>
-              <div>
-                <p class="text-sm font-semibold text-slate-800">2025 年"华为杯"研究生数学建模大赛</p>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">陕西省三等奖</p>
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/第十八届全国大学生智能汽车竞赛华南赛区三等奖.webp"
+                      data-title="第十八届全国大学生智能汽车竞赛"
+                      data-award-level="华南赛区三等奖"
+                      aria-label="查看第十八届全国大学生智能汽车竞赛华南赛区三等奖证书">
+                <img src="assets/images/awards/第十八届全国大学生智能汽车竞赛华南赛区三等奖.thumb.webp"
+                     alt="第十八届全国大学生智能汽车竞赛华南赛区三等奖证书"
+                     width="1325" height="1800" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">第十八届全国大学生智能汽车竞赛</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">华南赛区三等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
               </div>
-            </div>
+            </article>
+
+            <article class="award-card bg-slate-50 border-slate-200">
+              <button type="button" class="certificate-trigger"
+                      data-full-src="assets/images/awards/湖南省第十八届大学生计算机程序设计竞赛三等奖.webp"
+                      data-title="湖南省第十八届大学生计算机程序设计竞赛"
+                      data-award-level="三等奖"
+                      aria-label="查看湖南省第十八届大学生计算机程序设计竞赛三等奖证书">
+                <img src="assets/images/awards/湖南省第十八届大学生计算机程序设计竞赛三等奖.thumb.webp"
+                     alt="湖南省第十八届大学生计算机程序设计竞赛三等奖证书"
+                     width="1800" height="1273" loading="lazy" decoding="async" />
+                <span class="certificate-zoom-hint" aria-hidden="true">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.35-5.65a8 8 0 11-16 0 8 8 0 0116 0zm-8-3v6m-3-3h6"/></svg>
+                </span>
+              </button>
+              <div class="award-copy">
+                <h3 class="text-sm font-semibold text-slate-900 leading-snug">湖南省第十八届大学生计算机程序设计竞赛</h3>
+                <p class="text-xs text-slate-600 font-semibold mt-1">三等奖</p>
+                <p class="text-[0.68rem] text-slate-500 mt-2">点击查看证书</p>
+              </div>
+            </article>
 
           </div>
         </div>
@@ -617,10 +862,17 @@
     <p class="text-sm text-slate-400">© 2025 万佳林 · Jialing Wan · 西安电子科技大学</p>
   </footer>
 
-  <!-- Image Modal -->
-  <div id="imageModal" class="modal">
-    <span class="modal-close">&times;</span>
-    <img class="modal-content" id="modalImage" alt="放大图片">
+  <!-- Accessible Image Modal -->
+  <div id="imageModal" class="modal" role="dialog" aria-modal="true"
+       aria-labelledby="modalTitle" aria-describedby="modalDescription" aria-hidden="true">
+    <button type="button" class="modal-close" aria-label="关闭图片预览">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    <h2 id="modalTitle" class="sr-only">图片预览</h2>
+    <img class="modal-content" id="modalImage" alt="" decoding="async" />
+    <p id="modalDescription" class="modal-caption"></p>
   </div>
 
   <script>
@@ -636,40 +888,100 @@
       navbar.classList.toggle('nav-scrolled', window.scrollY > 10);
     }, { passive: true });
 
-    // Image zoom functionality
+    // Accessible image zoom functionality
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
     const closeBtn = document.querySelector('.modal-close');
+    let lastFocusedElement = null;
 
-    // Add click event to all zoomable images
-    document.querySelectorAll('.zoomable-image').forEach(img => {
-      img.addEventListener('click', function() {
-        modal.classList.add('active');
-        modalImg.src = this.src;
-        modalImg.alt = this.alt;
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    function openImageModal({ src, alt, title, level, trigger }) {
+      if (!src) return;
+
+      lastFocusedElement = trigger;
+      modalImg.src = src;
+      modalImg.alt = alt || `${title || '图片'}大图`;
+      modalTitle.textContent = level ? `${title}证书预览` : `${title || '图片'}预览`;
+      modalDescription.textContent = [title, level].filter(Boolean).join(' · ') || alt || '图片预览';
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      closeBtn.focus();
+    }
+
+    function closeImageModal() {
+      if (!modal.classList.contains('active')) return;
+
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      modalImg.removeAttribute('src');
+      modalImg.alt = '';
+      modalDescription.textContent = '';
+
+      if (lastFocusedElement) {
+        const elementToFocus = lastFocusedElement;
+        lastFocusedElement = null;
+        requestAnimationFrame(() => elementToFocus.focus({ preventScroll: true }));
+      }
+    }
+
+    document.querySelectorAll('.certificate-trigger').forEach(button => {
+      const openCertificate = () => {
+        const thumbnail = button.querySelector('img');
+        openImageModal({
+          src: button.dataset.fullSrc || thumbnail.currentSrc || thumbnail.src,
+          alt: thumbnail.alt,
+          title: button.dataset.title,
+          level: button.dataset.awardLevel,
+          trigger: button
+        });
+      };
+
+      button.addEventListener('click', openCertificate);
+      button.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openCertificate();
+        }
       });
     });
 
-    // Close modal when clicking X
-    closeBtn.addEventListener('click', () => {
-      modal.classList.remove('active');
-      document.body.style.overflow = 'auto';
+    document.querySelectorAll('.zoomable-image').forEach(img => {
+      img.setAttribute('tabindex', '0');
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-label', `查看${img.alt || '图片'}大图`);
+
+      const openZoomableImage = () => openImageModal({
+        src: img.currentSrc || img.src,
+        alt: img.alt,
+        title: img.alt,
+        level: '',
+        trigger: img
+      });
+
+      img.addEventListener('click', openZoomableImage);
+      img.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openZoomableImage();
+        }
+      });
     });
 
-    // Close modal when clicking outside the image
+    closeBtn.addEventListener('click', closeImageModal);
+
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-      }
+      if (e.target === modal) closeImageModal();
     });
 
-    // Close modal with Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('active')) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+      if (!modal.classList.contains('active')) return;
+      if (e.key === 'Escape') closeImageModal();
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        closeBtn.focus();
       }
     });
   </script>
